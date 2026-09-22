@@ -119,10 +119,11 @@ portfolio_router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
 @portfolio_router.post("/", response_model=PortfolioOut, status_code=201)
 def create_portfolio(payload: PortfolioRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    result = analyze_portfolio(payload.github_username)
+    github_username = payload.github_username.strip()
+    result = analyze_portfolio(github_username)
     pa = PortfolioAnalysis(
         user_id=user.id,
-        github_username=payload.github_username,
+        github_username=github_username.lstrip("@").strip(),
         repo_count=result.get("repo_count"),
         languages=result.get("languages"),
         portfolio_score=result.get("portfolio_score"),

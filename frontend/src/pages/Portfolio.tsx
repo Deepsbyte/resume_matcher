@@ -31,8 +31,8 @@ export default function Portfolio() {
     try {
       const { data } = await api.post('/portfolio/', { github_username: username.trim() })
       setResult(data)
-    } catch {
-      toast.error('Failed to analyze portfolio')
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to analyze portfolio')
     } finally {
       setLoading(false)
     }

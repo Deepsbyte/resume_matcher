@@ -214,13 +214,20 @@ def _mock_interview(job_role: str) -> dict:
 
 # ─── Portfolio Analysis ──────────────────────────────────
 def analyze_portfolio(github_username: str) -> dict:
-    import requests
+    import httpx
+    from urllib.parse import urlparse
+
+    github_username = github_username.strip()
+    if "github.com" in github_username.lower():
+        parsed = urlparse(github_username if "://" in github_username else f"https://{github_username}")
+        github_username = parsed.path.strip("/").split("/")[0]
+    github_username = github_username.lstrip("@").strip()
 
     try:
         headers = {}
-        repos_resp = requests.get(
+        repos_resp = httpx.get(
             f"https://api.github.com/users/{github_username}/repos?per_page=100&sort=updated",
-            headers=headers, timeout=10
+            headers=headers, timeout=10.0
         )
         if repos_resp.status_code != 200:
             return _mock_portfolio(github_username)
