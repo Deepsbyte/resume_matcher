@@ -5,7 +5,7 @@ from app.api.v1.router import api_router
 from app.db.session import engine, SessionLocal
 from app.db.session import Base
 from app.models.models import User, UserRole
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 
 # Some Windows bcrypt wheels/versions can trigger passlib/bcrypt import quirks.
 # Use a short demo password to avoid bcrypt edge-case truncation/validation.
