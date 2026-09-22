@@ -55,14 +55,16 @@ def startup():
         # Use a robust per-user existence check to avoid UNIQUE constraint failures
         # if the DB file already exists from an earlier run.
         demo_users = [
-            {"email": "candidate@demo.local", "full_name": "Demo Candidate", "role": UserRole.candidate},
-            {"email": "recruiter@demo.local", "full_name": "Demo Recruiter", "role": UserRole.recruiter},
-            {"email": "admin@demo.local", "full_name": "Demo Admin", "role": UserRole.admin},
+            {"email": "candidate@example.com", "full_name": "Demo Candidate", "role": UserRole.candidate},
+            {"email": "recruiter@example.com", "full_name": "Demo Recruiter", "role": UserRole.recruiter},
+            {"email": "admin@example.com", "full_name": "Demo Admin", "role": UserRole.admin},
         ]
 
         for u in demo_users:
             existing = db.query(User).filter(User.email == u["email"]).first()
             if existing:
+                if not verify_password(DEMO_PASSWORD, existing.hashed_password):
+                    existing.hashed_password = get_password_hash(DEMO_PASSWORD)
                 continue
 
             # Avoid passlib/bcrypt on startup in misconfigured Windows environments.
@@ -82,7 +84,7 @@ def startup():
             db.add(user)
 
         # Only commit if we actually added anything.
-        if db.new:
+        if db.new or db.dirty:
             db.commit()
 
     finally:
