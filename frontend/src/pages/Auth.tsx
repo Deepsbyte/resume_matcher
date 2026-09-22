@@ -48,16 +48,30 @@ export function Login() {
       await login(email, password)
       navigate('/dashboard')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Login failed'
+      const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : 'Login failed'
       toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
 
-  const fillDemo = (role: string) => {
-    setEmail(`${role}@demo.local`)
-    setPassword('DemoPass123!')
+  const loginDemo = async (role: string) => {
+    const demoEmail = `${role}@example.com`
+    const demoPassword = 'DemoPass123!'
+    setEmail(demoEmail)
+    setPassword(demoPassword)
+    setLoading(true)
+    try {
+      await login(demoEmail, demoPassword)
+      navigate('/dashboard')
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : 'Login failed — check the deployed backend'
+      toast.error(msg)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -89,7 +103,7 @@ export function Login() {
           <p className="text-xs text-slate-500 text-center mb-4">Demo accounts</p>
           <div className="flex gap-2">
             {['candidate', 'recruiter', 'admin'].map(r => (
-              <Button key={r} variant="secondary" size="sm" onClick={() => fillDemo(r)} className="flex-1 capitalize">
+              <Button key={r} variant="secondary" size="sm" onClick={() => loginDemo(r)} disabled={loading} className="flex-1 capitalize">
                 {r}
               </Button>
             ))}
