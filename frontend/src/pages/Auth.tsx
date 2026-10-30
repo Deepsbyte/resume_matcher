@@ -57,7 +57,7 @@ export function Login() {
   }
 
   const loginDemo = async (role: string) => {
-    const demoEmail = `${role}@example.com`
+    const demoEmail = `${role}@demo.example.com`
     const demoPassword = 'DemoPass123!'
     setEmail(demoEmail)
     setPassword(demoPassword)

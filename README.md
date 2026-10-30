@@ -46,6 +46,12 @@ docker compose up --build
 | Recruiter | recruiter@demo.example.com | DemoPass123! |
 | Admin | admin@demo.example.com | DemoPass123! |
 
+Demo accounts are automatically created or repaired when the backend starts.
+Docker stores the database in the persistent `postgres_data` volume, so these
+accounts remain available across restarts and future logins. A login token still
+expires after the configured `ACCESS_TOKEN_EXPIRE_MINUTES`; sign in again with
+the same credentials after it expires.
+
 ## Project structure
 
 ```
