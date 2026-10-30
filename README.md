@@ -42,9 +42,9 @@ docker compose up --build
 
 | Role | Email | Password |
 |------|-------|----------|
-| Candidate | candidate@demo.local | DemoPass123! |
-| Recruiter | recruiter@demo.local | DemoPass123! |
-| Admin | admin@demo.local | DemoPass123! |
+| Candidate | candidate@demo.example.com | DemoPass123! |
+| Recruiter | recruiter@demo.example.com | DemoPass123! |
+| Admin | admin@demo.example.com | DemoPass123! |
 
 ## Project structure
 

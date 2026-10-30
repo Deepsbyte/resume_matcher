@@ -48,43 +48,42 @@ def startup():
     # Create tables (no migrations required for local dev).
     Base.metadata.create_all(bind=engine)
 
-    # Seed demo users only if DB is empty.
     db = SessionLocal()
     try:
-        # Seed demo users only if the database is empty.
-        # Use a robust per-user existence check to avoid UNIQUE constraint failures
-        # if the DB file already exists from an earlier run.
         demo_users = [
             {"email": "candidate@example.com", "full_name": "Demo Candidate", "role": UserRole.candidate},
             {"email": "recruiter@example.com", "full_name": "Demo Recruiter", "role": UserRole.recruiter},
             {"email": "admin@example.com", "full_name": "Demo Admin", "role": UserRole.admin},
         ]
 
+        try:
+            demo_password_hash = get_password_hash(DEMO_PASSWORD)
+        except Exception:
+            demo_password_hash = DEMO_PASSWORD
+
+        changed = False
         for u in demo_users:
             existing = db.query(User).filter(User.email == u["email"]).first()
-            if existing:
-                if not verify_password(DEMO_PASSWORD, existing.hashed_password):
-                    existing.hashed_password = get_password_hash(DEMO_PASSWORD)
-                continue
+            if not existing:
+                role = u["email"].split("@", 1)[0]
+                for legacy_email in (f"{role}@demo.example.com", f"{role}@demo.local"):
+                    legacy = db.query(User).filter(User.email == legacy_email).first()
+                    if legacy:
+                        legacy.email = u["email"]
+                        existing = legacy
+                        changed = True
+                        break
+            if not existing:
+                existing = User(email=u["email"])
+                db.add(existing)
 
-            # Avoid passlib/bcrypt on startup in misconfigured Windows environments.
-            # Store a deterministic hash compatible with our verify_password().
-            # If bcrypt hashing fails, fall back to plaintext demo password.
-            try:
-                hashed = get_password_hash(DEMO_PASSWORD)
-            except Exception:
-                hashed = DEMO_PASSWORD
+            existing.full_name = u["full_name"]
+            existing.hashed_password = demo_password_hash
+            existing.role = u["role"]
+            existing.is_active = True
+            changed = True
 
-            user = User(
-                email=u["email"],
-                full_name=u["full_name"],
-                hashed_password=hashed,
-                role=u["role"],
-            )
-            db.add(user)
-
-        # Only commit if we actually added anything.
-        if db.new or db.dirty:
+        if changed:
             db.commit()
 
     finally:
@@ -94,4 +93,3 @@ def startup():
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "careeriq-api"}
-
